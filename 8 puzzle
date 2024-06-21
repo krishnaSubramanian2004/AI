@@ -1,0 +1,65 @@
+import heapq
+def manhattan_distance(board, goal):
+    distance = 0
+    goal_flat = [item for row in goal for item in row]
+    for i in range(3):
+        for j in range(3):
+            if board[i][j] != 0:
+                goal_x, goal_y = divmod(goal_flat.index(board[i][j]), 3)
+                distance += abs(goal_x - i) + abs(goal_y - j)
+    return distance
+def find_empty(board):
+    for i in range(3):
+        for j in range(3):
+            if board[i][j] == 0:
+                return (i, j)
+def neighbors(board):
+    x, y = find_empty(board)
+    directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+    result = []
+    for dx, dy in directions:
+        nx, ny = x + dx, y + dy
+        if 0 <= nx < 3 and 0 <= ny < 3:
+            new_board = [row[:] for row in board]
+            new_board[x][y], new_board[nx][ny] = new_board[nx][ny], new_board[x][y]
+            result.append(new_board)
+    return result
+def solve_puzzle(start, goal):
+    open_list = []
+    heapq.heappush(open_list, (manhattan_distance(start, goal), start, 0, None))
+    closed_set = set()
+    while open_list:
+        _, current, moves, previous = heapq.heappop(open_list)
+        if current == goal:
+            path = []
+            while previous:
+                path.append(current)
+                current, previous = previous
+            path.append(start)
+            return path[::-1]
+        closed_set.add(tuple(map(tuple, current)))
+        for neighbor in neighbors(current):
+            if tuple(map(tuple, neighbor)) not in closed_set:
+                heapq.heappush(open_list, (moves + 1 + manhattan_distance(neighbor, goal), neighbor, moves + 1, (current, previous)))
+    return None
+def print_solution(path):
+    for step in path:
+        for row in step:
+            print(row)
+        print()
+start = [
+    [1, 2, 3],
+    [4, 0, 5],
+    [7, 8, 6]
+]
+goal = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 0]
+]
+solution = solve_puzzle(start, goal)
+if solution:
+    print("Solution found:")
+    print_solution(solution)
+else:
+    print("No solution found.")
