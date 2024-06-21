@@ -1,0 +1,20 @@
+from collections import deque
+def water_jug_bfs(cap1, cap2, goal):
+    queue = deque([(0, 0)])
+    visited = set([(0, 0)])    
+    while queue:
+        jug1, jug2 = queue.popleft()
+        if jug1 == goal or jug2 == goal:
+            return True   
+        states = [
+            (cap1, jug2), (jug1, cap2), (0, jug2), (jug1, 0),
+            (jug1 - min(jug1, cap2 - jug2), jug2 + min(jug1, cap2 - jug2)),
+            (jug1 + min(jug2, cap1 - jug1), jug2 - min(jug2, cap1 - jug1))
+        ]
+        for state in states:
+            if state not in visited:
+                queue.append(state)
+                visited.add(state)
+    return False
+capacity1, capacity2, goal = 4, 3, 2
+print("Solution found:", water_jug_bfs(capacity1, capacity2, goal))
