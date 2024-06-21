@@ -1,0 +1,42 @@
+import random
+
+class VacuumCleaner:
+    def _init_(self, grid_size):
+        self.grid_size = grid_size
+        self.grid = [[random.choice(['clean', 'dirty']) for _ in range(grid_size)] for _ in range(grid_size)]
+        self.vacuum_position = (0, 0)
+        self.cleaned_rooms = 0
+
+    def display_grid(self):
+        for row in self.grid:
+            print(' '.join(row))
+        print()
+
+    def move(self):
+        x, y = self.vacuum_position
+        if self.grid[x][y] == 'dirty':
+            self.grid[x][y] = 'clean'
+            self.cleaned_rooms += 1
+            print(f'Cleaned room at ({x}, {y})')
+
+        # Try to move right
+        if y + 1 < self.grid_size:
+            self.vacuum_position = (x, y + 1)
+        # Try to move down
+        elif x + 1 < self.grid_size:
+            self.vacuum_position = (x + 1, 0)
+        else:
+            print("Finished cleaning the grid.")
+            return False
+        
+        return True
+
+    def run(self):
+        self.display_grid()
+        while self.move():
+            self.display_grid()
+
+# Usage
+grid_size = 5  # For example, a 5x5 grid
+vacuum_cleaner = VacuumCleaner(grid_size)
+vacuum_cleaner.run()
