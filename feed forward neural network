@@ -1,0 +1,70 @@
+import numpy as np
+
+class SimpleNeuralNetwork:
+    def __init__(self, input_size, hidden_size, output_size, learning_rate=0.1):
+        # Initialize weights and biases
+        self.weights_input_hidden = np.random.randn(hidden_size, input_size)
+        self.bias_hidden = np.zeros((hidden_size, 1))
+        self.weights_hidden_output = np.random.randn(output_size, hidden_size)
+        self.bias_output = np.zeros((output_size, 1))
+        self.learning_rate = learning_rate
+
+    def _sigmoid(self, z):
+        return 1 / (1 + np.exp(-z))
+
+    def _sigmoid_derivative(self, z):
+        return z * (1 - z)
+
+    def _forward(self, X):
+        # Forward pass
+        self.z1 = np.dot(self.weights_input_hidden, X.T) + self.bias_hidden
+        self.a1 = self._sigmoid(self.z1)
+        self.z2 = np.dot(self.weights_hidden_output, self.a1) + self.bias_output
+        self.a2 = self._sigmoid(self.z2)
+        return self.a2
+
+    def _compute_loss(self, Y, Y_hat):
+        m = Y.shape[0]
+        return -np.sum(Y * np.log(Y_hat.T) + (1 - Y) * np.log(1 - Y_hat.T)) / m
+
+    def _backward(self, X, Y, Y_hat):
+        m = X.shape[0]
+        dz2 = Y_hat - Y.T
+        dW2 = np.dot(dz2, self.a1.T) / m
+        db2 = np.sum(dz2, axis=1, keepdims=True) / m
+
+        dz1 = np.dot(self.weights_hidden_output.T, dz2) * self._sigmoid_derivative(self.a1)
+        dW1 = np.dot(dz1, X) / m
+        db1 = np.sum(dz1, axis=1, keepdims=True) / m
+
+        # Update weights and biases
+        self.weights_input_hidden -= self.learning_rate * dW1
+        self.bias_hidden -= self.learning_rate * db1
+        self.weights_hidden_output -= self.learning_rate * dW2
+        self.bias_output -= self.learning_rate * db2
+
+    def fit(self, X, Y, epochs=1000, verbose=True):
+        for epoch in range(epochs):
+            Y_hat = self._forward(X)
+            loss = self._compute_loss(Y, Y_hat)
+            self._backward(X, Y, Y_hat)
+            if verbose and epoch % 100 == 0:
+                print(f"Loss after epoch {epoch}: {loss}")
+
+    def predict(self, X):
+        Y_hat = self._forward(X)
+        return np.argmax(Y_hat, axis=0)
+
+# Example usage:
+if __name__ == '__main__':
+    # Example dataset (XOR problem)
+    X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+    Y = np.array([[0], [1], [1], [0]])  # Binary labels for XOR
+
+    # Initialize and train the neural network
+    nn = SimpleNeuralNetwork(input_size=2, hidden_size=2, output_size=1, learning_rate=0.1)
+    nn.fit(X, Y, epochs=10000)
+
+    # Make predictions
+    predictions = nn.predict(X)
+    print("Predictions:", predictions)
